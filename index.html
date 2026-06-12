@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字命盘 — 穷通宝鉴 · 三命通会 · 滴天髓</title>
+<style>
+  :root {
+    --gold: #c9a96e;
+    --gold-light: #f5e6c8;
+    --red: #8b1a1a;
+    --red-dark: #5c0a0a;
+    --bg: #1a1a1a;
+    --bg-card: #242424;
+    --bg-input: #2a2a2a;
+    --text: #e0d5c1;
+    --text-dim: #999;
+    --border: #3a3a3a;
+    --accent-water: #4a90d9;
+    --accent-fire: #d94a4a;
+    --accent-wood: #5a9a4a;
+    --accent-metal: #d9c84a;
+    --accent-earth: #c98a4a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  .header {
+    text-align: center; padding: 40px 20px 20px;
+    border-bottom: 2px solid var(--gold);
+    margin-bottom: 30px;
+  }
+  .header h1 { font-size: 2.2rem; color: var(--gold); letter-spacing: 4px; font-weight: 600; }
+  .header .sub { font-size: 0.9rem; color: var(--text-dim); margin-top: 8px; letter-spacing: 2px; }
+  .header .books { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
+
+  /* Form */
+  .form-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px; margin-bottom: 24px;
+  }
+  .form-row {
+    display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 100px; }
+  .form-group label { font-size: 0.85rem; color: var(--gold); letter-spacing: 1px; }
+  .form-group input, .form-group select {
+    background: var(--bg-input); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 12px; border-radius: 6px;
+    font-size: 1rem; font-family: inherit; outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--gold); }
+  .btn-pai {
+    background: linear-gradient(135deg, var(--red-dark), var(--red));
+    color: var(--gold-light); border: none; padding: 10px 36px;
+    border-radius: 6px; font-size: 1.1rem; cursor: pointer;
+    letter-spacing: 2px; font-family: inherit; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-pai:hover { background: linear-gradient(135deg, var(--red), #a02020); transform: translateY(-1px); }
+  .btn-pai:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Result */
+  .result { display: none; }
+  .result.show { display: block; }
+
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 1.1rem; color: var(--gold); letter-spacing: 2px;
+    border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title::before { content: '◆'; font-size: 0.6rem; }
+
+  /* Bazi Table */
+  .bazi-table {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 2px; max-width: 500px; margin: 0 auto;
+  }
+  .bazi-cell {
+    text-align: center; padding: 10px 4px; font-size: 0.95rem;
+  }
+  .bazi-cell.header-cell { color: var(--gold); font-size: 0.8rem; letter-spacing: 1px; padding: 6px; }
+  .bazi-cell.gan { font-size: 1.8rem; font-weight: 700; letter-spacing: 2px; color: #fff; }
+  .bazi-cell.zhi { font-size: 1.3rem; color: var(--text); }
+  .bazi-cell.label { font-size: 0.75rem; color: var(--text-dim); }
+  .bazi-cell.shishen { font-size: 0.8rem; padding: 4px; color: var(--gold-light); }
+  .bazi-cell.main { background: rgba(201,169,110,0.12); border-radius: 4px; }
+
+  /* Day Master */
+  .daymaster-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, rgba(201,169,110,0.2), rgba(201,169,110,0.08));
+    border: 1px solid var(--gold); border-radius: 20px;
+    padding: 8px 20px; font-size: 1.2rem;
+  }
+  .daymaster-badge .dm-gan { font-size: 1.6rem; font-weight: 700; color: var(--gold); }
+  .info-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px; margin-top: 12px;
+  }
+  .info-item { display: flex; gap: 8px; font-size: 0.9rem; }
+  .info-item .key { color: var(--text-dim); }
+  .info-item .val { color: var(--text); font-weight: 500; }
+
+  /* Charts row */
+  .charts-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .chart-box { flex: 1; min-width: 250px; text-align: center; }
+
+  /* Wuxing bars */
+  .wx-bar-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .wx-label { width: 24px; text-align: center; font-size: 0.85rem; }
+  .wx-bar-track { flex: 1; height: 18px; background: var(--bg-input); border-radius: 9px; overflow: hidden; }
+  .wx-bar-fill { height: 100%; border-radius: 9px; transition: width 0.6s ease; }
+  .wx-bar-fill.wood { background: var(--accent-wood); }
+  .wx-bar-fill.fire { background: var(--accent-fire); }
+  .wx-bar-fill.earth { background: var(--accent-earth); }
+  .wx-bar-fill.metal { background: var(--accent-metal); }
+  .wx-bar-fill.water { background: var(--accent-water); }
+  .wx-val { width: 32px; font-size: 0.8rem; text-align: right; color: var(--text-dim); }
+
+  /* Wangshuai */
+  .ws-bars { max-width: 400px; margin: 0 auto; }
+  .ws-row { margin: 10px 0; }
+  .ws-row .ws-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
+
+  /* Dayun Timeline */
+  .dayun-track { display: flex; gap: 4px; overflow-x: auto; padding: 8px 0; }
+  .dayun-item {
+    flex: 0 0 80px; text-align: center; padding: 10px 4px;
+    background: var(--bg-input); border-radius: 8px; font-size: 0.75rem;
+    border: 1px solid var(--border); transition: all 0.2s;
+    cursor: default;
+  }
+  .dayun-item.current { border-color: var(--gold); background: rgba(201,169,110,0.1); }
+  .dayun-item .dy-ganzhi { font-size: 1.1rem; font-weight: 600; color: var(--gold); }
+  .dayun-item .dy-age { color: var(--text-dim); margin-top: 2px; }
+  .dayun-item .dy-ss { font-size: 0.7rem; color: var(--gold-light); margin-top: 2px; }
+
+  /* Shensha tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 0.75rem; padding: 3px 10px; border-radius: 12px;
+    background: var(--bg-input); border: 1px solid var(--border);
+  }
+  .tag.good { border-color: rgba(201,169,110,0.4); color: var(--gold-light); }
+  .tag.warn { border-color: rgba(217,74,74,0.4); color: #e88; }
+
+  /* Relation */
+  .rel-list { font-size: 0.85rem; color: var(--text-dim); }
+  .rel-list .warn-text { color: #e88; }
+
+  /* Loading */
+  .loading { text-align: center; padding: 40px; display: none; }
+  .loading.show { display: block; }
+  .spinner {
+    width: 32px; height: 32px; border: 3px solid var(--border);
+    border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.5rem; }
+    .bazi-cell.gan { font-size: 1.3rem; }
+    .form-row { flex-direction: column; }
+    .btn-pai { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>八 字 命 盘</h1>
+    <div class="sub">穷通宝鉴 · 三命通会 · 滴天髓</div>
+    <div class="books">V1.1.0 | 纯标准库 · 零依赖</div>
+  </div>
+
+  <!-- Input Form -->
+  <div class="form-card">
+    <div class="form-row">
+      <div class="form-group"><label>年</label><input type="number" id="year" value="" min="1900" max="2100" placeholder="输入年份"></div>
+      <div class="form-group"><label>月</label><input type="number" id="month" value="" min="1" max="12" placeholder="月"></div>
+      <div class="form-group"><label>日</label><input type="number" id="day" value="" min="1" max="31" placeholder="日"></div>
+      <div class="form-group"><label>时 (0-23)</label><input type="number" id="hour" value="" min="0" max="23" placeholder="时"></div>
+      <div class="form-group"><label>性别</label><select id="gender"><option value="男" selected>男</option><option value="女">女</option></select></div>
+      <button class="btn-pai" onclick="paiBazi()">排　盘</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading"><div class="spinner"></div><div>排盘中…</div></div>
+
+  <!-- Result -->
+  <div class="result" id="result">
+
+    <!-- Basic Info -->
+    <div class="card" id="basic-card"></div>
+
+    <!-- Bazi Table -->
+    <div class="card">
+      <div class="card-title">四柱命盘</div>
+      <div class="bazi-table" id="bazi-table"></div>
+    </div>
+
+    <!-- Charts: Wuxing + Wangshuai -->
+    <div class="charts-row">
+      <div class="card chart-box">
+        <div class="card-title">五行分布</div>
+        <div id="wuxing-chart"></div>
+      </div>
+      <div class="card chart-box">
+        <div class="card-title">旺衰四维（滴天髓）</div>
+        <div class="ws-bars" id="wangshuai-chart"></div>
+      </div>
+    </div>
+
+    <!-- Geju + Yongshen -->
+    <div class="card" id="geju-card"></div>
+
+    <!-- Shensha -->
+    <div class="card" id="shensha-card"></div>
+
+    <!-- Relations -->
+    <div class="card" id="relations-card"></div>
+
+    <!-- Dayun -->
+    <div class="card">
+      <div class="card-title">大运走势</div>
+      <div id="dayun-info"></div>
+      <div class="dayun-track" id="dayun-track"></div>
+    </div>
+
+    <!-- Liunian -->
+    <div class="card" id="liunian-card"></div>
+  </div>
+
+</div>
+
+<script>
+const COLORS = {
+  '木': '#5a9a4a', '火': '#d94a4a', '土': '#c98a4a', '金': '#d9c84a', '水': '#4a90d9'
+};
+const WX_ORDER = ['金','木','水','火','土'];
+
+// ========= 解读知识库 =========
+const SHISHEN_INTRO = {
+  '比肩':'同类相助。代表兄弟、朋友、同事。旺则得人助力，衰则竞争失和。',
+  '劫财':'同类相争。代表竞争、合伙、破财。旺则合作得财，衰则受骗破财。',
+  '食神':'才华外露。代表创造力、口福、子女。温和聪慧，旺则技艺出众。',
+  '伤官':'叛逆锋芒。代表聪明、艺术、不服管。才华横溢但易得罪人。',
+  '正财':'稳定收入。代表工资、妻子、节俭。勤劳踏实，旺则财运稳定。',
+  '偏财':'意外之财。代表投资、副业、父亲。慷慨大方，旺则横财就手。',
+  '正官':'正当权力。代表官职、纪律、丈夫。正直负责，旺则事业有成。',
+  '七杀':'强制压力。代表权威、竞争、挑战。果断刚强，旺则威权显赫。',
+  '正印':'正统学识。代表学历、母亲、贵人。仁慈宽厚，旺则学业有成。',
+  '偏印':'偏门学问。代表特殊技能、养母。思维独特，旺则技艺精湛。',
+};
+
+const SHISHEN_JUDGE = {
+  '比肩':1,'劫财':-1,'食神':1,'伤官':-1,'正财':1,'偏财':1,'正官':1,'七杀':-1,'正印':1,'偏印':0,
+};
+
+const SHENSHA_MEANING = {
+  '天乙贵人':'🌟 命中最大的吉星，代表贵人相助、逢凶化吉。在你最困难的时候总有人拉一把。',
+  '文昌':'📚 主学业、文采、考试运。命带文昌，读书学习比常人轻松。',
+  '桃花':'🌸 主异性缘、魅力、社交。桃花旺的人招人喜欢，但已婚者需注意分寸。',
+  '驿马':'🐎 主动荡、奔波、迁移。命带驿马，一生多走动，适合需要出差的职业。',
+  '羊刃':'⚔️ 主刚烈、冲动、竞争。羊刃是一把双刃剑——用好了是魄力，用不好是鲁莽。',
+  '华盖':'🧘 主孤独、智慧、宗教缘。华盖星照，喜欢独处思考，有哲学气质。',
+  '将星':'👑 主领导力、决断力。命中带将星，天生有管理才能，能掌控局面。',
+  '文昌':'📖 主文采、科考、学业。命坐文昌，读书考试有天赋，文笔好。',
+  '—':'此柱暂无特殊神煞，平凡即福。',
+};
+
+const GEJU_MEANING = {
+  '正官格':'🛡️ 正官格：为人正直守规矩，适合体制内、管理岗位。就像公司的中层干部，稳重可靠。',
+  '七杀格':'⚡ 七杀格：性格刚烈果断，适合竞争激烈的行业。如同战场上的将军，压力越大越出色。',
+  '正财格':'💰 正财格：勤劳致富型，财富靠日积月累。像稳健的理财者，不贪快钱，细水长流。',
+  '偏财格':'💎 偏财格：善于发现商机，适合投资、贸易。像精明的商人，知道钱在哪里，怎么赚。',
+  '正印格':'📖 正印格：读书人的命，靠学识立足。适合教育、研究、文化行业，德高望重。',
+  '偏印格':'🔮 偏印格：思维独特，适合技术、艺术、玄学。不走寻常路的专家型人才。',
+  '食神格':'🎨 食神格：天生有才华和创造力。像艺术家，温和有品，擅长把想法变成作品。',
+  '伤官格':'🔥 伤官格：聪明绝顶但不好管。像天才程序员或设计师，能力超群但需要自由空间。',
+  '建禄格':'🏠 建禄格：日主得月令之气，根基扎实。如同房子有好的地基，一生安稳。',
+  '阳刃格':'🗡️ 阳刃格：性格刚强，有魄力有胆量。但过刚易折，需要学会收敛锋芒。',
+  '杂气格':'🌫️ 杂气格：格局不显但藏有潜力。月支藏干未透出，才能需要时间去发掘和打磨。大器晚成型。',
+};
+
+const WUXING_ANALYZE = {
+  '金': {too_much:'金过旺 → 性格刚硬固执，好胜心强。注意肺部、呼吸道健康。', too_little:'金偏弱 → 决断力不足，容易犹豫。需要加强自信心。', suggest:'适合金融、法律、机械等"金"行业来补益。'},
+  '木': {too_much:'木过旺 → 思虑过度，想得太多做得少。注意肝胆、情绪问题。', too_little:'木偏弱 → 缺乏主见和创造力。多接触大自然、阅读来补。', suggest:'适合教育、文化、医疗等"木"行业来发挥。'},
+  '水': {too_much:'水过旺 → 情绪波动大，心思太活络。注意肾脏、泌尿系统。', too_little:'水偏弱 → 沟通表达不够灵活，记忆力偏弱。', suggest:'适合物流、贸易、传媒等"水"行业来补益。'},
+  '火': {too_much:'火过旺 → 脾气急躁，容易冲动。注意心脏、血压问题。', too_little:'火偏弱 → 热情不足，缺乏行动力。需要有人推一把。', suggest:'适合能源、餐饮、互联网等"火"行业来点燃热情。'},
+  '土': {too_much:'土过旺 → 过于保守固执，不够灵活。注意脾胃、消化问题。', too_little:'土偏弱 → 缺乏定力和安全感，容易焦虑。需要建立稳定的生活框架。', suggest:'适合房地产、建筑、咨询等"土"行业来扎根。'},
+};
+
+const WANGSHUAI_ADVICE = {
+  '身旺':'💪 日主身旺 → 你自带能量，不需要靠别人。喜"克泄耗"：多做事、多表达、多社交。适合主动出击，冲就对了。',
+  '中和偏旺':'👍 日主中和偏旺 → 底子不错，稍微偏强。大部分情况下可以自主决策，遇到大事需要借力。',
+  '中和偏弱':'🤝 日主中和偏弱 → 需要借力。学会找贵人、找团队、找资源——不要硬扛。',
+  '身弱':'🆘 日主身弱 → 精力有限，容易累。要懂得"做什么不做什么"的取舍。喜生扶：多学习（印）、多交朋友（比劫）。',
+  '极弱':'🌀 日主极弱 → 可能入从格。不要强求独立，顺势而为反而有大成就。像藤蔓借助大树，借势而上。',
+};
+
+const RELATION_MEANING = {
+  '冲':'⚠️ 相冲 = 变动和冲突。冲不是坏事——它带来变化，变化中藏机会。但如果两柱都重要（如月日冲），人生波动较大。',
+  '合':'✅ 相合 = 和谐与合作。合代表互相吸引、关系融洽。合多的人善交际，但太多合则容易依赖他人。',
+  '刑':'⚡ 相刑 = 内心煎熬和纠结。刑不像冲那么剧烈，但更磨人——是一种持续的、慢性的心理压力。',
+  '害':'🔻 相害 = 暗中损害。影响力比冲刑小，但代表人际关系中容易有小摩擦和误会。',
+  '半合':'👍 半合 = 部分和谐，比全合力弱但仍是吉象。代表事情有好的势头但还缺一块拼图。',
+  '三合':'🌟 三合 = 大吉之象，三方力量汇聚。如同一支完整的团队，做什么都容易成功。',
+};
+
+function interpHTML(title, content, icon) {
+  return `<div style="margin-top:16px;padding:14px 18px;background:rgba(201,169,110,0.06);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;font-size:0.85rem;line-height:1.8;color:var(--text-dim)">
+    <div style="color:var(--gold);font-size:0.8rem;letter-spacing:2px;margin-bottom:6px">${icon||'📖'} ${title}</div>
+    ${content}
+  </div>`;
+}
+
+function goodBad(v, threshold) { return v >= threshold ? 'text-tag good' : 'text-tag warn'; }
+
+
+async function paiBazi() {
+  const btn = document.querySelector('.btn-pai');
+  btn.disabled = true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('result').classList.remove('show');
+
+  const year = parseInt(document.getElementById('year').value);
+  const month = parseInt(document.getElementById('month').value);
+  const day = parseInt(document.getElementById('day').value);
+  const hour = parseInt(document.getElementById('hour').value);
+  const gender = document.getElementById('gender').value;
+
+  if (year < 1900 || year > 2100) { alert('年份需在 1900-2100 之间'); btn.disabled = false; loading.classList.remove('show'); return; }
+  if (month < 1 || month > 12) { alert('月份无效'); btn.disabled = false; loading.classList.remove('show'); return; }
+  if (day < 1 || day > 31) { alert('日期无效'); btn.disabled = false; loading.classList.remove('show'); return; }
+  if (hour < 0 || hour > 23) { alert('小时需在 0-23 之间'); btn.disabled = false; loading.classList.remove('show'); return; }
+
+  try {
+    const formBody = `year=${year}&month=${month}&day=${day}&hour=${hour}&gender=${encodeURIComponent(gender)}`;
+    const resp = await fetch('/api/pai', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formBody });
+    const data = await resp.json();
+    if (data.error) { alert('排盘错误: ' + data.error); return; }
+    render(data);
+  } catch (e) {
+    alert('服务器连接失败，请确认 server.py 已启动\n' + e.message);
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('result').classList.add('show');
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function render(d) {
+  // Basic info
+  document.getElementById('basic-card').innerHTML = `
+    <div class="card-title">基本信息</div>
+    <div style="text-align:center;margin-bottom:12px">
+      <div class="daymaster-badge">
+        <span class="dm-gan">${d.day_master.gan}</span>
+        <span>${d.day_master.wuxing} · ${d.day_master.yin_yang} · 纳音${d.day_master.nayin}</span>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info-item"><span class="key">公历</span><span class="val">${d.basic.solar}</span></div>
+      <div class="info-item"><span class="key">时辰</span><span class="val">${d.basic.shichen} (${d.basic.shichen_range})</span></div>
+      <div class="info-item"><span class="key">性别</span><span class="val">${d.basic.gender}</span></div>
+      <div class="info-item"><span class="key">空亡</span><span class="val">${d.shensha.kongwang.join(' ')}</span></div>
+    </div>
+    ${dayMasterInterpret(d)}
+  `;
+
+  // Bazi table
+  const pnames = ['年柱', '月柱', '日柱', '时柱'];
+  let tableHTML = `
+    <div class="bazi-cell header-cell"></div>
+    ${pnames.map(p => `<div class="bazi-cell header-cell">${p}</div>`).join('')}
+    <div class="bazi-cell label">天干</div>
+    ${d.pillars.map((p,i) => `<div class="bazi-cell gan ${i===2?'main':''}">${p.gan}</div>`).join('')}
+    <div class="bazi-cell label">地支</div>
+    ${d.pillars.map(p => `<div class="bazi-cell zhi">${p.zhi}</div>`).join('')}
+    <div class="bazi-cell label">藏干</div>
+    ${d.pillars.map(p => `<div class="bazi-cell label" style="font-size:0.75rem">${p.cang_gan.map(c=>c.gan).join(' ')}</div>`).join('')}
+    <div class="bazi-cell label">十神</div>
+    ${d.pillars.map(p => `<div class="bazi-cell shishen">${p.shishen}</div>`).join('')}
+    <div class="bazi-cell label">纳音</div>
+    ${d.pillars.map(p => `<div class="bazi-cell label">${p.nayin}</div>`).join('')}
+  `;
+  document.getElementById('bazi-table').innerHTML = tableHTML;
+  document.getElementById('bazi-table').insertAdjacentHTML('afterend', pillarInterpret(d));
+
+  // Wuxing chart
+  const maxWx = Math.max(...Object.values(d.wuxing_count), 1) * 1.2;
+  let wxHTML = '<div style="max-width:350px;margin:0 auto">';
+  for (let wx of WX_ORDER) {
+    const val = d.wuxing_count[wx];
+    const pct = Math.round(val / maxWx * 100);
+    const displayVal = val === Math.floor(val) ? val.toFixed(0) : val.toFixed(1);
+    wxHTML += `
+      <div class="wx-bar-row">
+        <span class="wx-label" style="color:${COLORS[wx]}">${wx}</span>
+        <span class="wx-bar-track"><span class="wx-bar-fill ${wx==='木'?'wood':wx==='火'?'fire':wx==='土'?'earth':wx==='金'?'metal':'water'}" style="width:${pct}%"></span></span>
+        <span class="wx-val">${displayVal}</span>
+      </div>`;
+  }
+  wxHTML += '</div>';
+  document.getElementById('wuxing-chart').innerHTML = wxHTML + wuxingInterpret(d);
+
+  // Wangshuai chart
+  const ws = d.wangshuai;
+  const wsData = [
+    {label: '得令', val: ws.de_ling, max: 3, hint: '月令之气'},
+    {label: '得地', val: ws.de_di, max: 4, hint: '地支根基'},
+    {label: '得生', val: ws.de_sheng, max: 4, hint: '生我之力'},
+    {label: '得助', val: ws.de_zhu, max: 4, hint: '同我之力'},
+  ];
+  let wsHTML = '';
+  for (let w of wsData) {
+    const pct = Math.round(w.val / w.max * 100);
+    wsHTML += `
+      <div class="ws-row">
+        <div class="ws-label"><span>${w.label} <span style="font-size:0.75rem;color:var(--text-dim)">${w.hint}</span></span><span>${w.val}</span></div>
+        <span class="wx-bar-track"><span class="wx-bar-fill fire" style="width:${pct}%"></span></span>
+      </div>`;
+  }
+  wsHTML += `<div style="text-align:center;margin-top:12px;font-size:1.1rem">总分: <strong style="color:var(--gold)">${ws.total}</strong> → <strong>${ws.level}</strong></div>`;
+  wsHTML += wangshuaiInterpret(d);
+  document.getElementById('wangshuai-chart').innerHTML = wsHTML;
+
+  // Geju + Yongshen
+  let gejuHTML = `<div class="card-title">格局与用神</div>`;
+  gejuHTML += `<div class="info-grid">`;
+  gejuHTML += `<div class="info-item"><span class="key">格局</span><span class="val" style="color:var(--gold)">${d.geju.name}</span></div>`;
+  gejuHTML += `<div class="info-item"><span class="key">来源</span><span class="val">${d.geju.source}</span></div>`;
+  if (d.geju.candidates.length > 0) {
+    gejuHTML += `<div class="info-item"><span class="key">透出</span><span class="val">${d.geju.candidates.join(', ')}</span></div>`;
+  }
+  if (d.yongshen) {
+    gejuHTML += `<div class="info-item"><span class="key">调候用神</span><span class="val" style="color:var(--gold)">${d.yongshen.primary.join('、')}</span></div>`;
+    gejuHTML += `<div class="info-item"><span class="key">辅佐</span><span class="val">${d.yongshen.secondary.join('、')}</span></div>`;
+  }
+  gejuHTML += `</div>`;
+  if (d.yongshen) {
+    gejuHTML += `<div style="margin-top:12px;font-size:0.85rem;color:var(--text-dim);line-height:1.6">《穷通宝鉴》：${d.yongshen.desc}</div>`;
+  }
+  gejuHTML += gejuInterpret(d);
+  document.getElementById('geju-card').innerHTML = gejuHTML;
+
+  // Shensha
+  let ssHTML = `<div class="card-title">神煞</div>`;
+  for (let i = 0; i < 4; i++) {
+    const tags = d.shensha.by_pillar[i];
+    const tagClass = tags.some(t => t === '桃花' || t === '羊刃') ? 'warn' : 'good';
+    ssHTML += `<div style="display:flex;align-items:center;gap:12px;margin:8px 0">
+      <span style="font-weight:600;min-width:40px">${d.pillars[i].gan}${d.pillars[i].zhi}</span>
+      <span style="font-size:0.75rem;color:var(--text-dim);min-width:28px">${pnames[i]}</span>
+      <div class="tags">${tags.map(t => `<span class="tag ${t==='—'?'':tagClass}">${t}</span>`).join('')}</div>
+    </div>`;
+  }
+  ssHTML += shenshaInterpret(d);
+  document.getElementById('shensha-card').innerHTML = ssHTML;
+
+  // Relations
+  let relHTML = `<div class="card-title">刑冲合害</div><div class="rel-list">`;
+  for (let r of d.relations) {
+    const cls = r.includes('冲') || r.includes('刑') ? 'warn-text' : '';
+    relHTML += `<div class="${cls}">${r}</div>`;
+  }
+  relHTML += `</div>`;
+  relHTML += relationsInterpret(d);
+  document.getElementById('relations-card').innerHTML = relHTML;
+
+  // Dayun
+  const du = d.dayun;
+  const cd = d.current_dayun;
+  document.getElementById('dayun-info').innerHTML = `
+    <div class="info-grid" style="margin-bottom:16px">
+      <div class="info-item"><span class="key">排法</span><span class="val">${du.direction}</span></div>
+      <div class="info-item"><span class="key">起运</span><span class="val">${du.start_age}岁</span></div>
+      <div class="info-item"><span class="key">距离节气</span><span class="val">${du.days_to_jie}天（${du.jie_name}）</span></div>
+    </div>
+  `;
+  let dyHTML = '';
+  for (let dy of du.list) {
+    const isCurrent = cd && dy.age_start === cd.age_start;
+    dyHTML += `
+      <div class="dayun-item${isCurrent?' current':''}" title="${dy.gan}${dy.zhi} · ${dy.shishen} · 五行: ${dy.gan_wuxing}/${dy.zhi_wuxing}">
+        <div class="dy-ganzhi">${dy.gan}${dy.zhi}</div>
+        <div class="dy-ss">${dy.shishen}</div>
+        <div class="dy-age">${dy.age_start}-${dy.age_end}岁</div>
+        ${isCurrent ? '<div style="color:var(--gold);font-size:0.65rem;margin-top:2px">←当前</div>' : ''}
+      </div>`;
+  }
+  document.getElementById('dayun-track').innerHTML = dyHTML;
+  document.getElementById('dayun-track').insertAdjacentHTML('afterend', dayunInterpret(d));
+
+  // Liunian
+  const ln = d.liunian;
+  const age = ln.year - parseInt(document.getElementById('year').value);
+  document.getElementById('liunian-card').innerHTML = `
+    <div class="card-title">当前流年</div>
+    <div class="info-grid">
+      <div class="info-item"><span class="key">流年</span><span class="val" style="color:var(--gold)">${ln.year}年（${ln.gan}${ln.zhi}年）</span></div>
+      <div class="info-item"><span class="key">年龄</span><span class="val">${age}岁</span></div>
+      <div class="info-item"><span class="key">流年十神</span><span class="val">${ln.shishen}</span></div>
+      ${cd ? `<div class="info-item"><span class="key">当前大运</span><span class="val">${cd.age_start}-${cd.age_end}岁 ${cd.gan}${cd.zhi}（${cd.shishen}）</span></div>` : ''}
+    </div>
+    ${liunianInterpret(d, cd, age)}
+  `;
+
+  // 综合解读
+  document.getElementById('result').insertAdjacentHTML('beforeend', summaryCard(d));
+}
+
+// ========= 解读函数 =========
+
+function dayMasterInterpret(d) {
+  const dm = d.day_master;
+  const wx = dm.wuxing;
+  const traits = {
+    '木':`${dm.gan}木主仁。木性之人正直仁厚，如树木般向上生长。${dm.yin_yang==='阳'?'甲木如参天大树，有领导气质和担当精神。':'乙木如花草藤蔓，柔韧灵活，擅长顺应环境和借力生长。'}`,
+    '火':`${dm.gan}火主礼。火性之人热情有礼，如火焰般明亮照人。${dm.yin_yang==='阳'?'丙火如太阳之光，普照四方，有大格局和影响力。':'丁火如灯烛之光，温润持久，适合在专业领域深耕发光。'}`,
+    '土':`${dm.gan}土主信。土性之人诚实守信，如大地般稳重包容。${dm.yin_yang==='阳'?'戊土如城墙之土，厚重刚健，能承载大任。':'己土如田园之土，温润滋养，善于培养和照顾他人。'}`,
+    '金':`${dm.gan}金主义。金性之人刚毅果断，如金属般坚韧锋利。${dm.yin_yang==='阳'?'庚金如刀剑之金，锐利进取，适合竞争激烈的领域。':'辛金如珠宝之金，精致细腻，追求品质和完美。'}`,
+    '水':`${dm.gan}水主智。水性之人聪慧灵动，如流水般灵活变通。${dm.yin_yang==='阳'?'壬水如江河之水，气势磅礴，适合做大格局的谋划。':'癸水如雨露之水，细腻渗透，适合需要耐心和细致的工作。'}`,
+  };
+  let txt = traits[wx] || '';
+  txt += `<br><br>纳音「${dm.nayin}」：` + {
+    '海中金':'如深藏海底的珍宝，才华需要挖掘才能发光。',
+    '炉中火':'如炉中之火，温暖而有后劲，需要时间升温。',
+    '大林木':'如森林之木，根基深厚，适合团队合作。',
+    '路旁土':'如路边之土，平实有用，脚踏实地。',
+    '剑锋金':'如宝剑之锋，锐利无双，适合攻坚克难。',
+    '山头火':'如山头之火，高调热烈，适合需要表现力的工作。',
+    '涧下水':'如山涧之水，清新灵动，思维敏捷。',
+    '城头土':'如城墙之土，稳重可靠，适合守护型角色。',
+    '白蜡金':'如白蜡之金，需要打磨才能发光。大器晚成。',
+    '杨柳木':'如杨柳之木，柔韧随风，适应力极强。',
+    '泉中水':'如泉水之源，源源不绝，有持续输出的能力。',
+    '屋上土':'如屋上之土，居高临下，有大局观。',
+    '霹雳火':'如霹雳之火，爆发力强但需控制节奏。',
+    '松柏木':'如松柏之木，四季常青，韧性强。',
+    '流水水':'如水之流，变动不居，适合变动性大行业。',
+    '砂石金':'如砂中之金，需要淘洗筛选才能见真金。',
+    '山下火':'如山脚之火，温暖低调，适合辅助型角色。',
+    '平地木':'如平地之木，根基扎实，成长稳健。',
+    '壁上土':'如墙壁之土，有支撑力，适合建设性工作。',
+    '金箔金':'如金箔之金，精致华美，需要好的平台来展现。',
+    '覆灯火':'如覆灯之火，内敛有光，适合幕後工作。',
+    '天河水':'如天河之水，气势不凡，有远见卓识。',
+    '大驿土':'如大驿之土，通达四方，适合交通/物流/外交。',
+    '钗环金':'如钗环之金，精美饰物，适合艺术/美容/设计。',
+    '桑柘木':'如桑柘之木，有用之材，务实可靠。',
+    '柘榴木':'如柘榴之木，坚实耐用，后劲十足。',
+    '大海水':'如大海之水，容量无限，有包容心和宏大格局。',
+    '路旁土':'如路边之土，平实有用，脚踏实地。',
+  }[dm.nayin] || '';
+  return interpHTML('日主解读', txt, '☀️');
+}
+
+function pillarInterpret(d) {
+  const rows = d.pillars.map((p, i) => {
+    const intro = SHISHEN_INTRO[p.shishen] || '';
+    const flavor = p.shishen === '日主' ? '日主就是你自己，是整个八字的中心。其他七个字都围绕日主来分析。' :
+      `${p.name}${p.shishen}：${intro}`;
+    return `<div style="margin:6px 0"><span style="color:var(--gold)">${p.gan}${p.zhi}</span> ${flavor}</div>`;
+  }).join('');
+  // Analyze shishen balance
+  const ssCount = {};
+  d.pillars.forEach(p => { if (p.shishen !== '日主') { ssCount[p.shishen] = (ssCount[p.shishen]||0)+1; } });
+  let balance = '';
+  const dominants = Object.entries(ssCount).filter(([k,v]) => v >= 2);
+  if (dominants.length > 0) {
+    balance = `<br>⚠️ <strong>${dominants.map(([k])=>k).join('、')}偏多</strong> — ${dominants.map(([k])=>SHISHEN_INTRO[k]?.split('。')[1]||'').join('；')}`;
+  }
+  return interpHTML('四柱解读', rows + balance, '📊');
+}
+
+function wuxingInterpret(d) {
+  const wc = d.wuxing_count;
+  const lines = [];
+  for (let wx of ['木','火','土','金','水']) {
+    const val = wc[wx];
+    const info = WUXING_ANALYZE[wx];
+    if (val >= 3) lines.push(`<span style="color:${COLORS[wx]}">● ${wx}</span> 偏旺 → ${info.too_much}`);
+    else if (val <= 1) lines.push(`<span style="color:${COLORS[wx]}">● ${wx}</span> 偏弱 → ${info.too_little} ${info.suggest}`);
+    else lines.push(`<span style="color:${COLORS[wx]}">● ${wx}</span> 适中 → 平衡，无需调整。`);
+  }
+  return interpHTML('五行分析', lines.join('<br>'), '⚖️');
+}
+
+function wangshuaiInterpret(d) {
+  const ws = d.wangshuai;
+  const advice = WANGSHUAI_ADVICE[ws.level] || '';
+  let extra = '';
+  if (ws.de_ling === 0) extra += '<br>🔴 月令不帮日主——你不是天生就站在顺风口的人，凡事需要多付出几分努力。';
+  if (ws.de_sheng >= 2) extra += '<br>🟢 生扶之力充足——你有贵人运，长辈、老师、书籍、学历是你最大的靠山。';
+  if (ws.de_di < 1) extra += '<br>🔴 地支根基弱——做事情容易感到"使不上力"，需要先建基础再求发展。';
+  return interpHTML('旺衰解读', advice + extra, '📈');
+}
+
+function gejuInterpret(d) {
+  const meaning = GEJU_MEANING[d.geju.name] || GEJU_MEANING['杂气格'];
+  let yong = '';
+  if (d.yongshen) {
+    const pri = d.yongshen.primary.map(w => `${w}（${COLORS[w]?'':''}）`).join('、');
+    yong = `<br><br>🎯 <strong>调候用神取「${d.yongshen.primary.join('、')}」</strong> —— ${d.yongshen.desc}<br>
+    用神就是你的"药方"：<br>`;
+    for (let w of d.yongshen.primary) {
+      yong += `&nbsp;&nbsp;• <strong style="color:${COLORS[w]}">${w}</strong> = ${WUXING_ANALYZE[w].suggest.replace(/适合/,'你适合走').replace(/来补益|来发挥|来补|来点燃热情|来扎根/,'路线')}<br>`;
+    }
+    if (d.yongshen.secondary && d.yongshen.secondary.length > 0) {
+      yong += `&nbsp;&nbsp;• 辅佐用神：${d.yongshen.secondary.join('、')}，作为补充。<br>`;
+    }
+    yong += `<br>📌 简单说：你的好运藏在与"${d.yongshen.primary.join('、')}"相关的人事物中。多接触、多使用、多往这个方向走。`;
+  }
+  return interpHTML('格局解读', meaning + yong, '🏛️');
+}
+
+function shenshaInterpret(d) {
+  const allTags = [];
+  d.shensha.by_pillar.forEach((tags, i) => {
+    tags.forEach(t => { if (t !== '—') allTags.push({tag: t, pillar: d.pillars[i].gan + d.pillars[i].zhi}); });
+  });
+  if (allTags.length === 0) {
+    return interpHTML('神煞解读', '命盘无特殊神煞。没有神煞不代表不好——平凡即福，没有大起大落的命往往最安稳。', '✨');
+  }
+  const lines = allTags.map(t => {
+    const m = SHENSHA_MEANING[t.tag] || `${t.tag}：特殊的命理标记。`;
+    return `<span style="color:var(--gold)">${t.pillar}</span> ${m}`;
+  });
+  // kongwang
+  const kw = d.shensha.kongwang;
+  lines.push(`<br>🔸 <strong>空亡 ${kw.join(' ')}</strong>：这两个地支代表你人生中比较"空"的领域——有些事情努力了也未必有结果，不如顺其自然。`);
+  return interpHTML('神煞解读', lines.join('<br>'), '✨');
+}
+
+function relationsInterpret(d) {
+  let txt = '';
+  for (let r of d.relations) {
+    if (r.includes('冲')) txt += `🔴 ${r} → ${RELATION_MEANING['冲']}<br>`;
+    else if (r.includes('刑')) txt += `🟠 ${r} → ${RELATION_MEANING['刑']}<br>`;
+    else if (r.includes('合')) txt += `🟢 ${r} → ${RELATION_MEANING[r.includes('三合')?'三合':(r.includes('半合')?'半合':'合')]}<br>`;
+    else txt += `${r}<br>`;
+  }
+  if (d.relations.length === 1 && d.relations[0].includes('无明显')) {
+    txt = '✅ 四柱之间没有明显的刑冲合害。这意味着你的人生命运比较平稳，没有大起大落的冲击。';
+  }
+  return interpHTML('关系解读', txt, '🔗');
+}
+
+function dayunInterpret(d) {
+  const cd = d.current_dayun;
+  const du = d.dayun;
+  let txt = `<div style="margin-bottom:8px">每步大运管10年，上面的时间轴展示了你一生的运势框架。</div>`;
+  if (cd) {
+    const ss = SHISHEN_INTRO[cd.shishen] || '';
+    txt += `<br>🔶 <strong>你当前在「${cd.gan}${cd.zhi}」大运（${cd.age_start}-${cd.age_end}岁）</strong><br>`;
+    txt += `大运十神为「${cd.shishen}」：${ss}<br>`;
+    // Check if current dayun shishen is positive or negative
+    const judge = SHISHEN_JUDGE[cd.shishen] || 0;
+    if (judge > 0) txt += `<br>✅ 这步大运整体向好，${cd.shishen}为吉神，带来正面力量。好好把握这十年。`;
+    else if (judge < 0) txt += `<br>⚠️ 这步大运压力较大，${cd.shishen}为凶神。但压力也是动力——历史上很多大人物都是在"凶运"中崛起的。`;
+    // Tips
+    txt += `<br><br>📌 <strong>大运使用指南</strong>：大运就像十年的"天气"，流年就像每天的"气温"。好大运里也有坏流年，坏大运里也有好机会。不要因为当前不顺利就否定整个人生。`;
+  }
+  return interpHTML('大运解读', txt, '🔄');
+}
+
+function liunianInterpret(d, cd, age) {
+  const ln = d.liunian;
+  let txt = `<strong>${ln.year}年（${ln.gan}${ln.zhi}年）</strong>，你${age}岁。流年十神为「${ln.shishen}」。<br>`;
+  const ssIntro = SHISHEN_INTRO[ln.shishen] || '';
+  txt += `${ssIntro}<br>`;
+  if (cd) {
+    txt += `<br>此时你正在「${cd.gan}${cd.zhi}」大运中。`;
+    // Da yun + liu nian interaction tips
+    txt += `<br>大运像"季节"，流年像"天气"。`;
+    // Analyze if liunian clashes with dayun
+    if (ln.shishen === cd.shishen) {
+      txt += `<br><br>⚠️ 流年十神与大运十神相同（都是${cd.shishen}），这股力量今年加倍——好事加倍，压力也加倍。`;
+    }
+  }
+  return interpHTML('流年解读', txt, '📅');
+}
+
+function summaryCard(d) {
+  const dm = d.day_master;
+  const wx = dm.wuxing;
+  const wang = d.wangshuai;
+  const geju = d.geju;
+  const ys = d.yongshen;
+  const yongshen = ys ? ys.primary.join('、') : '需具体分析';
+  const pillars = d.pillars;
+  const dayGan = dm.gan;
+  const dayZhi = pillars[2].zhi;
+  const cd = d.current_dayun;
+  const ln = d.liunian;
+
+  // Helper: count shishen occurrences
+  function countSS(ssName) { return pillars.filter(p => p.shishen === ssName).length; }
+  function anyPillar(ssName) { return pillars.some(p => p.shishen === ssName); }
+  function cangHas(ssName) {
+    return pillars.some(p => p.cang_gan.some(c => c.shishen === ssName));
+  }
+
+  const hasCaiStar = anyPillar('正财') || anyPillar('偏财') || cangHas('正财') || cangHas('偏财');
+  const hasGuanStar = anyPillar('正官') || anyPillar('七杀') || cangHas('正官') || cangHas('七杀');
+  const hasYinStar = anyPillar('正印') || anyPillar('偏印') || cangHas('正印') || cangHas('偏印');
+  const hasShiShang = anyPillar('食神') || anyPillar('伤官') || cangHas('食神') || cangHas('伤官');
+  const hasBiJie = anyPillar('比肩') || anyPillar('劫财') || cangHas('比肩') || cangHas('劫财');
+
+  const ssCountAll = {};
+  pillars.forEach(p => {
+    if (p.shishen !== '日主') ssCountAll[p.shishen] = (ssCountAll[p.shishen]||0)+1;
+    p.cang_gan.forEach(c => {
+      if (c.shishen !== '日主') ssCountAll[c.shishen] = (ssCountAll[c.shishen]||0)+0.5;
+    });
+  });
+
+  // ===== 命局总览 =====
+  let overview = '';
+  const wxTraits = {
+    '木':`正直仁厚，如树木向上生长，有原则有担当。`,
+    '火':`热情主动，如火焰般明亮照人，感染力强。`,
+    '土':`诚实守信，如大地般稳重包容，靠谱可靠。`,
+    '金':`刚毅果断，如金属般坚韧锋利，讲原则重义气。`,
+    '水':`聪慧灵动，如流水般灵活变通，学东西快适应力强。`,
+  };
+  const wxWeakness = {
+    '木':`但木性太过则固执；${wang.level.includes('弱')?'木弱则缺乏主见，需要有人推动。':''}`,
+    '火':`但火性太过则急躁；${wang.level.includes('弱')?'火弱则动力不足，容易三分钟热度。':''}`,
+    '土':`但土性太过则保守；${wang.level.includes('弱')?'土弱则缺乏安全感，容易随波逐流。':''}`,
+    '金':`但金性太过则刚硬；${wang.level.includes('弱')?'金弱则决断力不足，容易犹豫。':''}`,
+    '水':`但水性太过则情绪化；${wang.level.includes('弱')?'水弱则思虑不够灵活，反应偏慢。':''}`,
+  };
+  overview = `${dm.gan}${dayZhi}日主，${wxTraits[wx]||''}${wxWeakness[wx]||''}`;
+  overview += `<br><br>命入<strong>${geju.name}</strong>，${GEJU_MEANING[geju.name]?.split('：')[1]?.split('。')[0] || '格局已定'}。`;
+  overview += `日主${wang.level}（总分${wang.total}），${WANGSHUAI_ADVICE[wang.level]?.replace(/💪|👍|🤝|🆘|🌀/,'') || ''}`;
+
+  // ===== 事业分析 =====
+  let career = '';
+  // Pattern-based career
+  if (geju.name.includes('正官') || geju.name.includes('七杀')) {
+    career += '命带官杀格局，天生适合有规矩、有层级的环境。';
+    career += geju.name.includes('正官') ? '正官格适合体制内、管理岗、公务员、法律、教育。' : '七杀格适合竞争激烈的行业：军警、工程、金融交易、创业。';
+  } else if (geju.name.includes('财')) {
+    career += '命带财格，天生对钱敏感，适合经商、贸易、投资、销售。';
+  } else if (geju.name.includes('印')) {
+    career += '命带印格，天生适合文化、教育、研究、传媒行业。知识就是你的核心竞争力。';
+  } else if (geju.name.includes('食神') || geju.name.includes('伤官')) {
+    career += '命带食伤格局，天生有才华创造力，适合艺术、设计、技术研发、咨询顾问。';
+  } else if (geju.name === '建禄格') {
+    career += '建禄格根基扎实，适合稳定组织内做专业骨干，或自己做小老板。';
+  } else if (geju.name === '阳刃格') {
+    career += '阳刃格刚强劲足，适合需要魄力的岗位：创业者、项目负责人、军警消防。';
+  } else {
+    career += '杂气格不显山露水，但月支藏干中自有潜力，适合先积累再发力，大器晚成。';
+  }
+
+  // Yongshen industry
+  if (ys) {
+    const industryMap = {
+      '木':'教育、出版、文化、医疗、园艺、木制、纺织、草药、心理咨询',
+      '火':'能源、电力、餐饮、娱乐、传媒、互联网、美容、化工、航空、演艺',
+      '土':'房地产、建筑、矿业、陶瓷、农业、保险、咨询、土地管理',
+      '金':'金融、法律、机械、五金、汽车、珠宝、军警、外科、精密制造',
+      '水':'物流、旅游、贸易、水利、酿酒、渔业、航海、传媒、销售',
+    };
+    career += `<br><br>🎯 <strong>用神方向</strong>：《穷通宝鉴》取「${ys.primary.join('、')}」为用。`;
+    for (let w of ys.primary) {
+      career += `<br>&nbsp;&nbsp;• 走<strong style="color:${COLORS[w]}">${w}</strong>属性行业：${industryMap[w] || w}`;
+    }
+  }
+
+  // Career timing from dayun
+  const careerPeaks = d.dayun.list.filter(dy => ['正官','七杀','正财','偏财','食神','伤官'].includes(dy.shishen));
+  if (careerPeaks.length > 0) {
+    career += `<br><br>📈 <strong>事业周期</strong>：${careerPeaks.map(dy => `${dy.age_start}-${dy.age_end}岁走${dy.gan}${dy.zhi}（${dy.shishen}）`).join('，')}。这些阶段事业会有明显变化。`;
+  }
+  if (cd) {
+    career += `<br>&nbsp;&nbsp;当前大运「${cd.gan}${cd.zhi}」(${cd.shishen})：${SHISHEN_INTRO[cd.shishen]?.split('。')[0] || ''}。`;
+    if (SHISHEN_JUDGE[cd.shishen] >= 0) {
+      career += '这步运整体对事业有利。';
+    } else {
+      career += '这步运压力较大，但压力中藏着突破的契机。';
+    }
+  }
+
+  // ===== 财运分析 =====
+  let wealth = '';
+  const zhengCaiCount = (ssCountAll['正财']||0);
+  const pianCaiCount = (ssCountAll['偏财']||0);
+  if (zhengCaiCount + pianCaiCount >= 2) {
+    wealth += '💰 命局中财星较旺，天生对钱敏感，来财渠道多。';
+    if (zhengCaiCount > pianCaiCount) {
+      wealth += '正财强于偏财——你的钱主要靠努力工作赚来，稳扎稳打。';
+    } else {
+      wealth += '偏财强于正财——你有投资/副业眼光，意外之财机会多于常人。';
+    }
+  } else if (zhengCaiCount + pianCaiCount > 0) {
+    wealth += `💰 命带${zhengCaiCount>0?'正':'偏'}财星，财运尚可，但需要主动经营。财富不是天上掉下来的，要靠自己挣。`;
+  } else {
+    wealth += '💰 命局财星不显，不是没财运，而是赚钱不是你的首要人生课题。';
+    if (hasShiShang) wealth += '但食伤可以生财——你的才华和创造力就是你的提款机。先做好专业，钱自然来。';
+    if (hasYinStar) wealth += '印星代表知识和信誉，靠专业知识和口碑赚钱是你的正路。';
+  }
+  // Yongshen = wealth?
+  if (ys) {
+    const wxIdx = WU_XING.indexOf(wx);
+    const caiWx = WU_XING[(wxIdx + 2) % 5]; // I-ke = cai
+    if (ys.primary.includes(caiWx)) {
+      wealth += `<br><br>🎯 用神恰好是「${caiWx}」（财星），求财是你的强项。${ys.desc}`;
+    }
+  }
+  // Wealth dayun
+  const wealthDayuns = d.dayun.list.filter(dy => ['正财','偏财'].includes(dy.shishen));
+  if (wealthDayuns.length > 0 && !(cd && ['正财','偏财'].includes(cd.shishen))) {
+    wealth += `<br><br>📈 <strong>财运高峰</strong>：${wealthDayuns.map(dy => `${dy.age_start}-${dy.age_end}岁「${dy.gan}${dy.zhi}」运`).join('，')}。在此之前做好积累。`;
+  }
+
+  // ===== 感情/家庭分析 =====
+  let love = '';
+  // Spouse palace analysis
+  const spouseZhi = pillars[2].zhi;
+  const spouseCang = pillars[2].cang_gan;
+  const spouseTenGods = spouseCang.map(c => c.shishen);
+  const spouseWx = pillars[2].zhi_wuxing;
+
+  if (spouseTenGods.includes('正官') || spouseTenGods.includes('七杀')) {
+    // For male: guan/sha in spouse palace = pressure or authoritative spouse
+    love += `💑 配偶宫坐${spouseZhi}（藏${spouseCang.map(c=>c.gan).join('')}），其中有${spouseTenGods.filter(s=>s.includes('官')||s.includes('杀')).join('、')}。`;
+    love += '你的另一半可能性格强势、有主见，在事业和生活中给你压力但也带来成长。';
+  } else if (spouseTenGods.includes('正财')) {
+    love += `💑 配偶宫坐${spouseZhi}，正财入配偶宫——你和配偶在经济和生活中互相扶持，对方务实可靠。`;
+  } else if (spouseTenGods.includes('正印') || spouseTenGods.includes('偏印')) {
+    love += `💑 配偶宫坐${spouseZhi}，藏有印星——你的另一半像"充电站"，能在你低谷时给你支持和安慰。对方多半有学识有教养。`;
+  } else if (spouseTenGods.includes('食神') || spouseTenGods.includes('伤官')) {
+    love += `💑 配偶宫藏食伤星——你的另一半有才华有情趣，感情中比较浪漫，但也需要自由空间。`;
+  } else if (spouseTenGods.includes('比肩') || spouseTenGods.includes('劫财')) {
+    love += `💑 配偶宫坐${spouseZhi}——你和另一半像"战友"，互相理解但也容易较劲。注意财务上要有清晰界限。`;
+  } else {
+    love += `💑 配偶宫坐${spouseZhi}（属${spouseWx}），婚姻中${wx}${spouseWx}${spouseWx===wx?'同气连枝，容易共鸣':'互补，可以互相成就'}。`;
+  }
+
+  // Check day-zhi for chong with other pillars
+  const dayZhiChong = d.relations.filter(r => r.includes('日') && (r.includes('冲') || r.includes('刑')));
+  if (dayZhiChong.length > 0) {
+    love += `<br>⚠️ 日支被冲/刑——感情婚姻容易有波折，建议晚婚，或结婚后多给彼此空间。`;
+  }
+
+  // Taohua
+  const hasTaohua = d.shensha.by_pillar.some(tags => tags.includes('桃花'));
+  if (hasTaohua) love += '<br>🌸 命带桃花——异性缘好，容易获得异性帮助，但已婚者需注意分寸。';
+
+  // Family/parent analysis
+  const yearPillar = pillars[0];
+  love += `<br><br>👨‍👩‍👦 <strong>家庭关系</strong>：年柱${yearPillar.gan}${yearPillar.zhi}代表原生家庭。`;
+  if (yearPillar.shishen.includes('印')) {
+    love += `年柱为印星，家庭给予了你精神支持和教育资源。父母重视你的学习和教养。`;
+  } else if (yearPillar.shishen.includes('财')) {
+    love += `年柱为财星，家庭经济条件尚可，父母对你物质生活的保障比较到位。`;
+  } else if (yearPillar.shishen.includes('官') || yearPillar.shishen.includes('杀')) {
+    love += `年柱为官杀，家庭教育比较严格，父亲或长辈对你要求高。`;
+  } else if (yearPillar.shishen.includes('食') || yearPillar.shishen.includes('伤')) {
+    love += `年柱为食伤，原生家庭比较开明自由，父母给了你较大的发展空间。`;
+  } else {
+    love += `年柱为${yearPillar.shishen}，原生家庭对你的影响温和平顺。`;
+  }
+
+  // ===== 健康分析 =====
+  let health = '';
+  const wc = d.wuxing_count;
+  const healthMap = {
+    '木':{organ:'肝胆', symp:'情绪郁结、用眼过度、偏头痛', tip:'少熬夜，多去公园走走，春季养肝效果最好。'},
+    '火':{organ:'心脏/心血管', symp:'心悸、失眠、血压波动', tip:'适度运动（不要过量），少吃油腻，控制情绪。'},
+    '土':{organ:'脾胃/消化', symp:'消化不良、胃痛、容易疲劳', tip:'规律饮食，少吃生冷，适当吃温热食物。'},
+    '金':{organ:'肺/呼吸道', symp:'感冒咳嗽、皮肤问题、便秘', tip:'多呼吸新鲜空气，练练深呼吸，秋季注意润肺。'},
+    '水':{organ:'肾/泌尿', symp:'腰酸、水肿、精力不济', tip:'多喝水，不憋尿，冬天注意保暖，晚上少熬夜。'},
+  };
+  const weakWx = Object.entries(wc).filter(([k,v]) => v < 1).map(([k])=>k);
+  const strongWx = Object.entries(wc).filter(([k,v]) => v >= 3).map(([k])=>k);
+
+  if (weakWx.length > 0) {
+    health += `🔴 <strong>偏弱的五行</strong>：${weakWx.map(w => {
+      const h = healthMap[w];
+      return `${w}（主${h.organ}）→ 容易${h.symp}。${h.tip}`;
+    }).join('<br>&nbsp;&nbsp;')}`;
+  }
+  if (strongWx.length > 0) {
+    health += `${weakWx.length>0?'<br><br>':''}🟡 <strong>偏旺的五行</strong>：${strongWx.map(w => {
+      const h = healthMap[w];
+      return `${w}过旺也会伤${h.organ}，注意平衡。${h.tip}`;
+    }).join('<br>&nbsp;&nbsp;')}`;
+  }
+  if (weakWx.length === 0 && strongWx.length === 0) {
+    health += '🟢 五行较为均衡，身体健康基础不错。保持规律作息和适度运动即可。';
+  }
+  // Wangshuai health
+  if (wang.level.includes('弱')) {
+    health += '<br><br>📌 身弱者精力相对有限，注意不要过度消耗。学会说"不"，把精力用在最关键的事情上。';
+  }
+
+  // ===== 未来发展与大运时间线 =====
+  let future = '';
+  const du = d.dayun;
+  future += `<strong>起运：${du.start_age}岁</strong>，${du.direction}（${du.days_to_jie}天后${du.jie_name}起运）。`;
+  future += `<br>起运早意味着人生较早进入独立阶段；起运晚则早年需要依赖家庭，中晚年发力。`;
+
+  // Life phases
+  const earlyDayuns = du.list.filter(dy => dy.age_start < 30);
+  const midDayuns = du.list.filter(dy => dy.age_start >= 30 && dy.age_start < 60);
+  const lateDayuns = du.list.filter(dy => dy.age_start >= 60);
+
+  future += '<br><br>📅 <strong>人生三阶段</strong>：';
+  future += `<br>&nbsp;&nbsp;🔹 <strong>早年（0-30岁）</strong>：${earlyDayuns.map(dy=>`${dy.gan}${dy.zhi}(${dy.shishen})`).join('→')}`;
+  const earlySS = earlyDayuns.map(dy=>dy.shishen);
+  if (earlySS.some(s=>s.includes('印'))) future += ' — 少年学习运不错，应打好知识基础。';
+  if (earlySS.some(s=>s.includes('杀'))) future += ' — 早年有些压力和挑战，但锻炼了抗压能力。';
+  if (earlySS.some(s=>s.includes('财'))) future += ' — 青年时期就已经有赚钱的意识和行动。';
+
+  future += `<br>&nbsp;&nbsp;🔹 <strong>中年（30-60岁）</strong>：${midDayuns.map(dy=>`${dy.gan}${dy.zhi}(${dy.shishen})`).join('→')}`;
+  const midSS = midDayuns.map(dy=>dy.shishen);
+  if (midSS.some(s=>s.includes('财'))) future += ' — 中年财星到位，事业和收入的黄金期。';
+  if (midSS.some(s=>s.includes('官'))) future += ' — 中年官星发力，适合争取管理岗位和社会地位。';
+  if (midSS.some(s=>s.includes('印'))) future += ' — 中年仍然有学习充电的空间，可以转型到更专业的领域。';
+
+  future += `<br>&nbsp;&nbsp;🔹 <strong>晚年（60岁后）</strong>：${lateDayuns.map(dy=>`${dy.gan}${dy.zhi}(${dy.shishen})`).join('→')}`;
+  const lateSS = lateDayuns.map(dy=>dy.shishen);
+  if (lateSS.some(s=>s.includes('食')||s.includes('伤'))) future += ' — 晚年食伤发力，适合发挥余热、著书立说、培养后人。';
+  if (lateSS.some(s=>s.includes('印'))) future += ' — 晚年安逸，适合读书养生享受生活。';
+  if (lateSS.some(s=>s.includes('财'))) future += ' — 晚年财运仍佳，为子女留福。';
+
+  // Current status
+  future += `<br><br>🔶 <strong>当前（${ln.year}年）</strong>：你${ln.year - parseInt(document.getElementById('year').value)}岁，`;
+  if (cd) {
+    future += `在「${cd.gan}${cd.zhi}」大运中（${cd.age_start}-${cd.age_end}岁），流年「${ln.gan}${ln.zhi}」（${ln.shishen}）。`;
+  }
+  future += `<br>下一步大运走势：`;
+  // Show next 3 dayuns from current
+  const cdIdx = cd ? du.list.indexOf(cd) : -1;
+  const upcoming = du.list.slice(Math.max(0, cdIdx), cdIdx + 3);
+  future += upcoming.map((dy, i) => {
+    const marker = i === 0 ? ' ← 当前' : '';
+    return `<br>&nbsp;&nbsp;${dy.age_start}岁「${dy.gan}${dy.zhi}」(${dy.shishen})${marker}`;
+  }).join('');
+
+  // ===== 用神生活建议 =====
+  let advice = '';
+  if (ys) {
+    const wxAdvice = {
+      '木':['养一盆绿色植物','穿绿色/青色衣服','多去公园树林','早上向东方向工作','学习一项新技能或兴趣'],
+      '火':['增加红色/紫色单品','多晒太阳、多做户外运动','养成一个"出头露面"的爱好（如演讲/表演）','去南方城市旅游','做事时提醒自己"先动起来再说"'],
+      '土':['穿黄色/棕色衣服','保持稳定作息和生活习惯','多做接地气的活动：种花、爬山','往中部/本地发展','做事前先做好计划，脚踏实地'],
+      '金':['穿白色/金色','佩戴金属饰品','培养一个需要"精进"的技能','多与金融/法律/技术人士交流','做事果断，减少犹豫'],
+      '水':['多喝水、穿黑色/蓝色','养成记录和复盘的习惯','多接触水和流动的事物','往北方发展','保持灵活，不要在一棵树上吊死'],
+    };
+    advice += '<br>🎯 <strong>开运小贴士</strong>：';
+    for (let w of ys.primary) {
+      const tips = wxAdvice[w] || [];
+      advice += `<br>&nbsp;&nbsp;<strong style="color:${COLORS[w]}">${w}</strong>：${tips.slice(0,3).join('。')}。`;
+    }
+  }
+
+  // Assemble final HTML
+  return `<div class="card" style="border:2px solid var(--gold)">
+    <div class="card-title">📋 综合解读总结</div>
+    <div style="font-size:0.9rem;line-height:2;color:var(--text)">
+
+      <div style="padding:16px;background:rgba(201,169,110,0.06);border-radius:8px;margin-bottom:20px">
+        <span style="font-size:1.2rem;font-weight:700;color:var(--gold)">${dm.gan}日主 · ${wx}性${dm.yin_yang}干</span>
+        <span style="margin-left:16px">格局：<strong>${geju.name}</strong></span>
+        <span style="margin-left:16px">旺衰：<strong>${wang.level}</strong>（${wang.total}分）</span>
+        ${ys ? `<span style="margin-left:16px">用神：<strong style="color:${COLORS[ys.primary[0]]}">${ys.primary.join('、')}</strong></span>` : ''}
+      </div>
+
+      ${sectionHTML('🔮 命局总览', overview)}
+      ${sectionHTML('💼 事业分析', career)}
+      ${sectionHTML('💰 财运分析', wealth)}
+      ${sectionHTML('💑 感情家庭', love)}
+      ${sectionHTML('🏥 健康分析', health)}
+      ${sectionHTML('📅 未来发展', future)}
+      ${sectionHTML('💡 生活建议', advice)}
+
+      <div style="margin-top:20px;padding:12px;background:rgba(201,169,110,0.04);border-radius:8px;font-size:0.8rem;color:var(--text-dim);text-align:center">
+        ⚠️ 以上分析基于命理学原理，仅供文化参考。人生的轨迹由自己掌握——命理是工具，不是宿命。
+      </div>
+    </div>
+  </div>`;
+}
+
+function sectionHTML(title, content) {
+  if (!content) return '';
+  return `<div style="margin-bottom:20px;padding:16px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid var(--border)">
+    <div style="color:var(--gold);font-size:0.95rem;font-weight:600;letter-spacing:1px;margin-bottom:10px">${title}</div>
+    <div style="line-height:2">${content}</div>
+  </div>`;
+}
+
+// WU_XING index helper
+const WU_XING = ['木','火','土','金','水'];
+
+
+// Auto-pai on load if default values
+window.addEventListener('DOMContentLoaded', () => {
+  // Pre-fill today's date
+  const now = new Date();
+  document.getElementById('year').value = now.getFullYear();
+  document.getElementById('month').value = now.getMonth() + 1;
+  document.getElementById('day').value = now.getDate();
+  document.getElementById('hour').value = now.getHours();
+});
+</script>
+</body>
+</html>
